@@ -1,0 +1,279 @@
+{
+  "theme": {
+    "mode": "light",
+    "description": "Editorial Indonesian Fashion Haute-Minimalism with warm parchment canvas, charcoal couture typography, deep terracota/bordeaux accents, crisp monochrome data hierarchy for multi-marketplace seller studio, and mobile-first responsive touchpoints."
+  },
+  "fonts": {
+    "heading": "Playfair Display Variable",
+    "body": "Plus Jakarta Sans Variable",
+    "mono": "JetBrains Mono Variable",
+    "imports": [
+      "@import \"@fontsource-variable/playfair-display\";",
+      "@import \"@fontsource-variable/plus-jakarta-sans\";",
+      "@import \"@fontsource-variable/jetbrains-mono\";"
+    ],
+    "css_vars": {
+      "--font-heading": "'Playfair Display Variable', serif",
+      "--font-sans": "'Plus Jakarta Sans Variable', sans-serif",
+      "--font-mono": "'JetBrains Mono Variable', monospace"
+    }
+  },
+  "typography": {
+    "scale_px": {
+      "display": 56,
+      "h1": 42,
+      "h2": 32,
+      "h3": 22,
+      "body": 16,
+      "caption": 14
+    },
+    "rules": {
+      "display": "font-heading font-normal tracking-tight leading-[1.08]",
+      "h1": "font-heading font-medium tracking-tight leading-[1.15]",
+      "h2": "font-heading font-medium tracking-tight leading-[1.2]",
+      "h3": "font-sans font-semibold tracking-tight text-foreground",
+      "body": "font-sans font-normal leading-relaxed text-muted-foreground",
+      "caption": "font-sans font-medium text-xs tracking-wide uppercase text-muted-foreground",
+      "mono_data": "font-mono text-xs tracking-tight"
+    }
+  },
+  "colors": {
+    "accent": "#9F2B2B",
+    "on_accent": "#FFFFFF",
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#FAF8F5",
+        "on_bg": "#141413",
+        "on_bg_muted": "#68645E",
+        "roles": {
+          "link": "#9F2B2B",
+          "error": "#B91C1C",
+          "success": "#15803D",
+          "border": "#E5E0D8"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#141413",
+        "on_bg_muted": "#68645E",
+        "roles": {
+          "link": "#9F2B2B",
+          "error": "#B91C1C",
+          "success": "#15803D",
+          "border": "#EBE6DF"
+        }
+      },
+      {
+        "name": "editorial_dark",
+        "kind": "solid",
+        "bg": "#141413",
+        "on_bg": "#F5F3EF",
+        "on_bg_muted": "#A8A29A",
+        "roles": {
+          "link": "#E87979",
+          "error": "#F87171",
+          "success": "#4ADE80",
+          "border": "#2C2A27"
+        }
+      },
+      {
+        "name": "hero",
+        "kind": "image",
+        "contrast_against": "#141413",
+        "guarantee": "scrim: linear-gradient(180deg, rgba(20,20,19,0.3) 0%, rgba(20,20,19,0.75) 100%)",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#E5E0D8",
+        "roles": {
+          "link": "#FFC4C4",
+          "error": "#FCA5A5",
+          "success": "#86EFAC"
+        }
+      },
+      {
+        "name": "glass_header",
+        "kind": "glass",
+        "contrast_against": "#141413",
+        "guarantee": "backdrop-blur-xl bg-[#FAF8F5]/85 border-b border-[#E5E0D8]/80 shadow-sm",
+        "on_bg": "#141413",
+        "on_bg_muted": "#68645E"
+      },
+      {
+        "name": "stylist_chat_bubble_ai",
+        "kind": "solid",
+        "bg": "#F3EFEA",
+        "on_bg": "#141413",
+        "on_bg_muted": "#68645E",
+        "roles": {
+          "link": "#9F2B2B",
+          "border": "#E2DDD5"
+        }
+      },
+      {
+        "name": "marketplace_shopee",
+        "kind": "solid",
+        "bg": "#FFF1EB",
+        "on_bg": "#EE4D2D",
+        "on_bg_muted": "#7A3522"
+      },
+      {
+        "name": "marketplace_tokopedia",
+        "kind": "solid",
+        "bg": "#EEFAEE",
+        "on_bg": "#03AC0E",
+        "on_bg_muted": "#1E5A23"
+      },
+      {
+        "name": "marketplace_tiktok",
+        "kind": "solid",
+        "bg": "#F4F4F6",
+        "on_bg": "#010101",
+        "on_bg_muted": "#4B5563"
+      },
+      {
+        "name": "marketplace_lazada",
+        "kind": "solid",
+        "bg": "#EDF3FE",
+        "on_bg": "#0F146D",
+        "on_bg_muted": "#1E3A8A"
+      }
+    ]
+  },
+  "entry_surfaces": {
+    "/": "editorial split hero with oversized couture typography and dual ID/EN quick switch, curated looks rail right, followed by multi-marketplace sync highlight and conversational AI stylist widget",
+    "/login": "luxury minimal auth split — left high-fashion lookbook portrait with brand manifesto, right clean credential panel with quick customer vs seller preset switcher",
+    "/register": "luxury minimal auth split — left high-fashion lookbook portrait with brand manifesto, right registration form with role selector customer/admin seller",
+    "/stylist": "immersive editorial AI atelier — left interactive prompt and style drawer, right dynamic look canvas with live store inventory pairing cards",
+    "/seller": "precision seller studio with marketplace tabs (Shopee, Tokopedia, TikTok Shop, Lazada), AI listing copy generator with single-click clipboard sync, and product inventory table",
+    "/checkout": "refined order summary with Indonesian Rupiah formatting (Rp), shipping courier select, and Midtrans Snap payment gateway modal simulation/real flow"
+  },
+  "currency_and_locale": {
+    "default_language": "id",
+    "languages_supported": ["id", "en"],
+    "currency_code": "IDR",
+    "currency_symbol": "Rp",
+    "currency_format": "Rp {amount.toLocaleString('id-ID')}",
+    "date_format": "dd MMMM yyyy (WIB)"
+  },
+  "media": {
+    "image_urls": {
+      "hero_editorial": {
+        "url": "https://images.unsplash.com/photo-1649094995015-047fcf337506?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwzfHxoaWdoJTIwZmFzaGlvbiUyMG1vZGVsJTIwcG9ydHJhaXQlMjBlZGl0b3JpYWx8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Hero Banner / Editorial Landing",
+        "description": "High fashion model in architectural couture setting on stone bench"
+      },
+      "editorial_man": {
+        "url": "https://images.unsplash.com/photo-1699459867169-515c14378f79?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHw0fHxoaWdoJTIwZmFzaGlvbiUyMG1vZGVsJTIwcG9ydHJhaXQlMjBlZGl0b3JpYWx8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Lookbook / Menswear Suit",
+        "description": "Editorial portrait of model in tailored linen-green blazer suit"
+      },
+      "streetwear_blazers": {
+        "url": "https://images.unsplash.com/photo-1740710370552-a49b5b01f80a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwY2xvdGhpbmclMjBzdHJlZXR3ZWFyJTIwbGluZW4lMjBibGF6ZXJ8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Catalog / Minimalist Shirts & Blazers",
+        "description": "Rack of impeccably tailored minimalist shirts and jackets on clothes rack"
+      },
+      "flatlay_linen_look": {
+        "url": "https://images.unsplash.com/photo-1691053318576-4bf08315e877?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwzfHxtaW5pbWFsaXN0JTIwY2xvdGhpbmclMjBzdHJlZXR3ZWFyJTIwbGluZW4lMjBibGF6ZXJ8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Product / Linen Blazer Outfit with Eyewear",
+        "description": "Curated beige linen jacket flatlay with eyewear and organic textures"
+      },
+      "tailored_duo": {
+        "url": "https://images.unsplash.com/photo-1740710748146-a15d840d6f40?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwY2xvdGhpbmclMjBzdHJlZXR3ZWFyJTIwbGluZW4lMjBibGF6ZXJ8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Catalog / Contemporary Tailored Jackets",
+        "description": "Two structured outerwear pieces in deep navy and steel blue"
+      },
+      "accessories_flatlay": {
+        "url": "https://images.unsplash.com/photo-1511556820780-d912e42b4980?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwyfHxmYXNoaW9uJTIwYWNjZXNzb3JpZXMlMjBiYWclMjBzdW5nbGFzc2VzJTIwYm9vdHN8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Accessories / Bag & Sunglasses Set",
+        "description": "Luxury leather tote bag with silk scarf, sunglasses and sneakers on warm beige canvas"
+      },
+      "eyewear_luxury": {
+        "url": "https://images.unsplash.com/photo-1537832816519-689ad163238b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwzfHxmYXNoaW9uJTIwYWNjZXNzb3JpZXMlMjBiYWclMjBzdW5nbGFzc2VzJTIwYm9vdHN8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Accessories / Tortoiseshell Eyewear",
+        "description": "Editorial shot of designer sunglasses and jewelry"
+      },
+      "auth_lookbook": {
+        "url": "https://images.unsplash.com/photo-1649217708362-4368faa2559b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwyfHxoaWdoJTIwZmFzaGlvbiUyMG1vZGVsJTIwcG9ydHJhaXQlMjBlZGl0b3JpYWx8ZW58MHx8fHwxNzkxMzkwOTc4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Auth / Lookbook Split Screen",
+        "description": "Striking high fashion portrait of woman in lime editorial trench"
+      }
+    }
+  },
+  "layout_and_grids": {
+    "structure": "Mobile-first editorial layout with generous vertical rhythm (py-16 md:py-24), asymmetric bento highlights, and sticky glass navigation bar with blur and subtle border.",
+    "product_grid": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8",
+    "seller_grid": "grid grid-cols-1 lg:grid-cols-12 gap-6",
+    "mobile_rules": "Bottom navigation floating pill for mobile shoppers with quick access to Catalog, AI Stylist, Cart sheet with counter badge, and Seller Switcher."
+  },
+  "motion": {
+    "library": "motion/react",
+    "transitions": "transition-colors duration-200 ease-out, transition-transform duration-200 ease-out, transition-opacity duration-200 ease-out",
+    "presets": {
+      "card_hover": "hover:-translate-y-1 hover:shadow-md",
+      "fade_in": "{ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35 } }",
+      "stagger_list": "staggerChildren: 0.08"
+    }
+  },
+  "accessibility": {
+    "standards": "APCA and WCAG 2.1 AA compliant",
+    "contrast_guarantee": "All text has minimum 4.5:1 contrast against respective surfaces. Dark text #141413 on #FAF8F5 offers 17.5:1 ratio; accent #9F2B2B text on white offers 6.8:1 ratio.",
+    "keyboard_focus": "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9F2B2B] focus-visible:ring-offset-2",
+    "reduced_motion": "motion-reduce:transition-none motion-reduce:transform-none",
+    "aria_labels": "All icon-only buttons (cart drawer trigger, language switch, search, favorite, copy button) must have descriptive aria-label and data-testid"
+  },
+  "testing_attributes": {
+    "rule": "Every interactive control and key data display must include data-testid with kebab-case descriptor",
+    "examples": [
+      "data-testid=\"nav-language-toggle\"",
+      "data-testid=\"nav-cart-trigger\"",
+      "data-testid=\"nav-seller-studio-link\"",
+      "data-testid=\"product-card-1\"",
+      "data-testid=\"product-add-to-cart-btn\"",
+      "data-testid=\"cart-drawer\"",
+      "data-testid=\"cart-checkout-btn\"",
+      "data-testid=\"midtrans-pay-modal\"",
+      "data-testid=\"ai-stylist-input\"",
+      "data-testid=\"ai-stylist-send-btn\"",
+      "data-testid=\"seller-marketplace-tab-shopee\"",
+      "data-testid=\"seller-marketplace-tab-tokopedia\"",
+      "data-testid=\"seller-ai-generate-listing-btn\"",
+      "data-testid=\"seller-copy-shopee-title-btn\"",
+      "data-testid=\"seller-export-csv-btn\"",
+      "data-testid=\"auth-login-submit-btn\""
+    ]
+  },
+  "components_and_routes": {
+    "routes": [
+      { "path": "/", "page": "Home.tsx", "title": "FASHION_MART | Curated Editorial & AI Fashion" },
+      { "path": "/products", "page": "Products.tsx", "title": "Koleksi & Katalog Produk" },
+      { "path": "/product/:id", "page": "ProductDetail.tsx", "title": "Detail Produk" },
+      { "path": "/stylist", "page": "AiStylist.tsx", "title": "AI Personal Fashion Stylist" },
+      { "path": "/seller", "page": "SellerStudio.tsx", "title": "Seller Studio & AI Multi-Marketplace Sync" },
+      { "path": "/orders", "page": "OrderHistory.tsx", "title": "Riwayat Pesanan & Status Midtrans" },
+      { "path": "/login", "page": "Login.tsx", "title": "Masuk Akun" },
+      { "path": "/register", "page": "Register.tsx", "title": "Daftar Akun" }
+    ],
+    "key_components": [
+      "frontend/src/components/Navbar.tsx (Bilingual switcher ID/EN, Role switch, Cart Sheet trigger, Stylist link)",
+      "frontend/src/components/Footer.tsx (Editorial footer with newsletter, fashion house manifesto, marketplace badges)",
+      "frontend/src/components/ProductCard.tsx (Editorial ratio 3:4 product card with quick add and hover preview)",
+      "frontend/src/components/CartDrawer.tsx (Slide-over sheet with item quantity controls, subtotal in IDR, and Midtrans checkout button)",
+      "frontend/src/components/MidtransModal.tsx (Midtrans Snap payment simulation with QRIS, Virtual Account BCA/Mandiri/BRI, GoPay, and Card options)",
+      "frontend/src/components/AiStylistChat.tsx (Streaming Gemini chat with occasion badges, moodboard generation, and direct product recommendation links)",
+      "frontend/src/components/AiListingGenerator.tsx (Multi-channel title/description/tags optimizer for Shopee, Tokopedia, TikTok Shop, Lazada with instant copy button and CSV export)",
+      "frontend/src/components/SellerProductTable.tsx (Central catalog manager with modal CRUD, inventory count, and sync status)"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. EDITORIAL LOOK & FEEL: Treat FASHION_MART as a high-end fashion tech platform combining Vogue-like editorial restraint with sharp e-commerce utility.",
+    "2. BILINGUAL SUPPORT: Provide a lightweight translation helper/store supporting Indonesian (default) and English across all nav links, button texts, stylist prompt suggestions, and seller tools.",
+    "3. MIDTRANS PAYMENT GATEWAY: Implement a realistic Midtrans Snap interactive modal that triggers on checkout, displays simulated QRIS, BCA/Mandiri/BRI Virtual Account, and GoPay payment methods with instant status update to 'Settlement / Paid' upon confirmation.",
+    "4. AI FASHION STYLIST: Provide a rich AI conversational stylist using Gemini (via Emergent LLM integration or backend endpoint) that understands Indonesian/English style requests (e.g., 'OOTD Kondangan Modern Minimalis budget under Rp 1.500.000', 'Smart Casual interview kantor SCBD') and pairs actual store products into matching sets.",
+    "5. SELLER STUDIO & AI LISTING GENERATOR: Allow sellers to input brief product notes and generate customized marketplace copy for Shopee (high search volume tags, SEO title format), Tokopedia (official store style specifications), TikTok Shop (hook + trending hashtags), and Lazada with one-click copy and CSV export.",
+    "6. SEED DATA & MOCK RESILIENCE: Seed at least 8-12 realistic Indonesian fashion items (Batik Kontemporer, Linen Oversized Blazer, Silk Scarf, Culotte Trousers, Vegan Leather Tote, etc.) in IDR currency (e.g., Rp 249.000 - Rp 1.890.000) with working cart persistence in localStorage/state.",
+    "7. MOBILE EXCELLENCE: Ensure touch targets are at least 44px, drawer animations are smooth, and the mobile bottom navigation or floating quick action gives frictionless access to the AI Stylist and Cart."
+  ]
+}
