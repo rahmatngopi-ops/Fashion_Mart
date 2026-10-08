@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Download, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Copy, Download, PackageCheck, Pencil, Plus, Sparkles, Trash2, Truck, CheckCheck, X } from "lucide-react";
 import { toast } from "sonner";
-import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api";
-import type { ListingResponse, Marketplace, MarketplaceListing, Order, Product, ProductInput } from "@/lib/types";
-import { useI18n } from "@/lib/i18n";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api";
+import type { AdminStatusUpdate, ListingResponse, Marketplace, MarketplaceListing, Order, OrderStatus, Product, ProductInput, Voucher, VoucherInput, VoucherType } from "@/lib/types";
+import { useI18n, type DictKey } from "@/lib/i18n";
 import { errMsg, rupiah, useMe } from "@/lib/helpers";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StatusBadge } from "@/pages/Orders";
+import { ORDER_STATUSES, OrderStatusBadge } from "@/components/OrderBits";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 const MARKETS: { key: Marketplace; label: string; bg: string; fg: string }[] = [
   { key: "shopee", label: "Shopee", bg: "#FFF1EB", fg: "#EE4D2D" },
@@ -316,36 +318,220 @@ function ListingTab({ products }: { products: Product[] }) {
   );
 }
 
+function ShipDialog({ order, onClose }: { order: Order | null; onClose: () => void }) {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const [resi, setResi] = useState("");
+  const ship = useMutation({
+    mutationFn: () => apiPatch<Order>(`/admin/orders/${order!.id}/status`, { status: "shipped", tracking_number: resi } satisfies AdminStatusUpdate),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      toast.success(t("ord_shipped"));
+      setResi("");
+      onClose();
+    },
+    onError: (e) => toast.error(errMsg(e, t("error_generic"))),
+  });
+  return (
+    <Dialog open={!!order} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent data-testid="ship-dialog">
+        <DialogHeader><DialogTitle className="font-heading text-2xl">{t("act_ship")}</DialogTitle></DialogHeader>
+        <p className="text-sm text-muted-foreground">{order?.order_code} · {order?.courier_label}</p>
+        <form onSubmit={(e) => { e.preventDefault(); ship.mutate(); }} className="space-y-4">
+          <Input autoFocus required value={resi} onChange={(e) => setResi(e.target.value.toUpperCase())} placeholder={t("input_resi")} className="h-11 font-mono" data-testid="ship-resi-input" />
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} data-testid="ship-cancel-btn">{t("cancel")}</Button>
+            <Button type="submit" disabled={ship.isPending || !resi.trim()} data-testid="ship-submit-btn"><Truck /> {t("act_ship")}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function OrdersTab() {
   const { t } = useI18n();
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState<OrderStatus | "">("");
+  const [shipping, setShipping] = useState<Order | null>(null);
   const { data: orders } = useQuery({ queryKey: ["orders", "admin"], queryFn: () => apiGet<Order[]>("/admin/orders") });
+  const update = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: AdminStatusUpdate["status"] }) =>
+      apiPatch<Order>(`/admin/orders/${id}/status`, { status, tracking_number: "" } satisfies AdminStatusUpdate),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+    onError: (e) => toast.error(errMsg(e, t("error_generic"))),
+  });
+  const shown = (orders ?? []).filter((o) => !filter || o.status === filter);
+  const count = (s: OrderStatus) => orders?.filter((o) => o.status === s).length ?? 0;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-2 md:grid-cols-7">
+        {(["", ...ORDER_STATUSES] as const).map((s) => (
+          <button
+            key={s || "all"}
+            type="button"
+            onClick={() => setFilter(s)}
+            data-testid={`admin-orders-filter-${s || "all"}`}
+            className={cn(
+              "rounded-sm border p-3 text-left transition-colors duration-200",
+              filter === s ? "border-ink bg-ink text-parchment" : "border-border bg-white hover:border-ink",
+            )}
+          >
+            <p className="font-mono text-xl">{s ? count(s) : orders?.length ?? 0}</p>
+            <p className="text-[11px] uppercase tracking-wider opacity-70">{s ? t(`ord_${s}` as DictKey) : t("all_orders")}</p>
+          </button>
+        ))}
+      </div>
+      <div className="rounded-sm border border-border bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order</TableHead>
+              <TableHead>{t("customer")}</TableHead>
+              <TableHead>Items</TableHead>
+              <TableHead className="text-right">{t("total")}</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {shown.length === 0 && (
+              <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">{t("orders_empty")}</TableCell></TableRow>
+            )}
+            {shown.map((o) => (
+              <TableRow key={o.id} data-testid={`admin-order-row-${o.order_code}`}>
+                <TableCell>
+                  <Link to={`/orders/${o.id}`} className="font-mono text-xs hover:text-brand" data-testid="admin-order-link">{o.order_code}</Link>
+                  <p className="text-[11px] text-muted-foreground">{o.courier_label}{o.tracking_number && ` · ${o.tracking_number}`}</p>
+                </TableCell>
+                <TableCell className="text-xs">{o.recipient_name} · {o.phone}<br /><span className="text-muted-foreground">{o.zone_label}</span></TableCell>
+                <TableCell className="max-w-56 text-xs">{o.items.map((i) => `${i.name} (${[i.color, i.size].filter(Boolean).join("/")}) x${i.quantity}`).join(", ")}</TableCell>
+                <TableCell className="text-right font-mono text-xs">{rupiah(o.gross_amount)}</TableCell>
+                <TableCell><OrderStatusBadge status={o.status} /></TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    {o.status === "paid" && (
+                      <Button size="sm" onClick={() => update.mutate({ id: o.id, status: "packed" })} disabled={update.isPending} data-testid="admin-order-pack-btn"><PackageCheck /> {t("act_pack")}</Button>
+                    )}
+                    {o.status === "packed" && (
+                      <Button size="sm" onClick={() => setShipping(o)} data-testid="admin-order-ship-btn"><Truck /> {t("act_ship")}</Button>
+                    )}
+                    {o.status === "shipped" && (
+                      <Button size="sm" variant="outline" onClick={() => update.mutate({ id: o.id, status: "completed" })} disabled={update.isPending} data-testid="admin-order-complete-btn"><CheckCheck /> {t("act_complete")}</Button>
+                    )}
+                    {(o.status === "awaiting_payment" || o.status === "paid") && (
+                      <Button size="icon-sm" variant="ghost" aria-label={t("act_cancel")} className="text-destructive" disabled={update.isPending}
+                        onClick={() => { if (confirm(t("cancel_confirm"))) update.mutate({ id: o.id, status: "cancelled" }); }} data-testid="admin-order-cancel-btn"><X /></Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <ShipDialog order={shipping} onClose={() => setShipping(null)} />
+    </div>
+  );
+}
+
+const V_EMPTY: VoucherInput = { code: "", type: "percent", value: 10, min_spend: 0, max_discount: 0, description: "", active: true };
+const V_LABEL: Record<VoucherType, string> = { percent: "% Persen", fixed: "Rp Potongan", shipping: "Gratis Ongkir" };
+
+function VouchersTab() {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<VoucherInput>(V_EMPTY);
+  const { data: vouchers } = useQuery({ queryKey: ["vouchers"], queryFn: () => apiGet<Voucher[]>("/admin/vouchers") });
+  const done = () => qc.invalidateQueries({ queryKey: ["vouchers"] });
+  const onErr = (e: unknown) => toast.error(errMsg(e, t("error_generic")));
+  const create = useMutation({
+    mutationFn: () => apiPost<Voucher>("/admin/vouchers", form),
+    onSuccess: () => { done(); setOpen(false); setForm(V_EMPTY); },
+    onError: onErr,
+  });
+  const toggle = useMutation({ mutationFn: (id: string) => apiPatch<Voucher>(`/admin/vouchers/${id}/toggle`), onSuccess: done, onError: onErr });
+  const del = useMutation({ mutationFn: (id: string) => apiDelete(`/admin/vouchers/${id}`), onSuccess: done, onError: onErr });
+  const fmt = (v: Voucher) => (v.type === "percent" ? `${v.value}%` : rupiah(v.value));
+
   return (
     <div className="rounded-sm border border-border bg-white">
+      <div className="flex items-center justify-between border-b border-border p-4">
+        <p className="font-mono text-xs text-muted-foreground">{vouchers?.length ?? 0} voucher</p>
+        <Button onClick={() => setOpen(true)} data-testid="voucher-add-btn"><Plus /> {t("add_voucher")}</Button>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead>{t("customer")}</TableHead>
-            <TableHead>Items</TableHead>
-            <TableHead className="text-right">{t("total")}</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Code</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>{t("value")}</TableHead>
+            <TableHead>{t("min_spend")}</TableHead>
+            <TableHead>{t("active")}</TableHead>
+            <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders?.length === 0 && (
-            <TableRow><TableCell colSpan={5} className="py-10 text-center text-muted-foreground">{t("orders_empty")}</TableCell></TableRow>
-          )}
-          {orders?.map((o) => (
-            <TableRow key={o.id} data-testid={`admin-order-row-${o.order_code}`}>
-              <TableCell className="font-mono text-xs">{o.order_code}</TableCell>
-              <TableCell className="text-xs">{o.phone}<br /><span className="text-muted-foreground">{o.address.slice(0, 40)}</span></TableCell>
-              <TableCell className="text-xs">{o.items.map((i) => `${i.name} x${i.quantity}`).join(", ")}</TableCell>
-              <TableCell className="text-right font-mono text-xs">{rupiah(o.gross_amount)}</TableCell>
-              <TableCell><StatusBadge status={o.payment_status} /></TableCell>
+          {vouchers?.map((v) => (
+            <TableRow key={v.id} data-testid={`voucher-row-${v.code}`}>
+              <TableCell><p className="font-mono font-semibold">{v.code}</p><p className="text-xs text-muted-foreground">{v.description}</p></TableCell>
+              <TableCell className="text-xs">{V_LABEL[v.type]}</TableCell>
+              <TableCell className="font-mono text-xs">{fmt(v)}{v.max_discount > 0 && ` (max ${rupiah(v.max_discount)})`}</TableCell>
+              <TableCell className="font-mono text-xs">{rupiah(v.min_spend)}</TableCell>
+              <TableCell><Checkbox checked={v.active} onCheckedChange={() => toggle.mutate(v.id)} data-testid={`voucher-toggle-${v.code}`} /></TableCell>
+              <TableCell className="text-right">
+                <Button size="icon-sm" variant="ghost" aria-label="delete" onClick={() => { if (confirm(`${t("delete")} ${v.code}?`)) del.mutate(v.id); }} data-testid={`voucher-delete-${v.code}`}><Trash2 /></Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent data-testid="voucher-dialog">
+          <DialogHeader><DialogTitle className="font-heading text-2xl">{t("add_voucher")}</DialogTitle></DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); create.mutate(); }} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Code</Label>
+                <Input required minLength={3} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="font-mono" data-testid="voucher-code-input" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Type</Label>
+                <Select value={form.type} onValueChange={(v: string) => setForm({ ...form, type: v as VoucherType })}>
+                  <SelectTrigger className="w-full" data-testid="voucher-type-select"><SelectValue>{(v) => V_LABEL[v as VoucherType]}</SelectValue></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(V_LABEL) as VoucherType[]).map((k) => <SelectItem key={k} value={k} data-testid={`voucher-type-${k}`}>{V_LABEL[k]}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label>{t("value")}</Label>
+                <Input type="number" min={1} required value={form.value} onChange={(e) => setForm({ ...form, value: Number(e.target.value) })} data-testid="voucher-value-input" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("min_spend")}</Label>
+                <Input type="number" min={0} value={form.min_spend} onChange={(e) => setForm({ ...form, min_spend: Number(e.target.value) })} data-testid="voucher-min-input" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="truncate">Max</Label>
+                <Input type="number" min={0} value={form.max_discount} onChange={(e) => setForm({ ...form, max_discount: Number(e.target.value) })} data-testid="voucher-max-input" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("description")}</Label>
+              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} data-testid="voucher-description-input" />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("cancel")}</Button>
+              <Button type="submit" disabled={create.isPending} data-testid="voucher-save-btn">{t("save")}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -374,10 +560,12 @@ export default function Seller() {
           <TabsTrigger value="listing" data-testid="seller-tab-listing">{t("tab_listing")}</TabsTrigger>
           <TabsTrigger value="catalog" data-testid="seller-tab-catalog">{t("tab_catalog")}</TabsTrigger>
           <TabsTrigger value="orders" data-testid="seller-tab-orders">{t("tab_orders")}</TabsTrigger>
+          <TabsTrigger value="vouchers" data-testid="seller-tab-vouchers">{t("tab_vouchers")}</TabsTrigger>
         </TabsList>
         <TabsContent value="listing"><ListingTab products={products ?? []} /></TabsContent>
         <TabsContent value="catalog"><CatalogTab products={products ?? []} /></TabsContent>
         <TabsContent value="orders"><OrdersTab /></TabsContent>
+        <TabsContent value="vouchers"><VouchersTab /></TabsContent>
       </Tabs>
     </div>
   );

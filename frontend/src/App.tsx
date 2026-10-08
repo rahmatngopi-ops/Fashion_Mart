@@ -6,6 +6,7 @@ import ProductDetail from "@/pages/ProductDetail";
 import Stylist from "@/pages/Stylist";
 import Seller from "@/pages/Seller";
 import Orders from "@/pages/Orders";
+import OrderDetail from "@/pages/OrderDetail";
 import Checkout from "@/pages/Checkout";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/stylist" element={<Stylist />} />
         <Route path="/seller" element={<Seller />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

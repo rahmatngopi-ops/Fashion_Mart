@@ -6,6 +6,7 @@ export interface CartLine {
   price: number;
   image_url: string;
   size: string;
+  color: string;
   quantity: number;
 }
 
@@ -14,14 +15,15 @@ interface CartCtx {
   open: boolean;
   setOpen: (o: boolean) => void;
   add: (line: CartLine) => void;
-  setQty: (product_id: string, size: string, qty: number) => void;
+  setQty: (line: CartLine, qty: number) => void;
   clear: () => void;
   count: number;
   subtotal: number;
 }
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "fm_cart";
+const KEY = "fm_cart_v2";
+const same = (a: CartLine, b: CartLine) => a.product_id === b.product_id && a.size === b.size && a.color === b.color;
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>(() => {
@@ -39,7 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((line: CartLine) => {
     setItems((prev) => {
-      const hit = prev.find((i) => i.product_id === line.product_id && i.size === line.size);
+      const hit = prev.find((i) => same(i, line));
       if (hit) {
         return prev.map((i) => (i === hit ? { ...i, quantity: Math.min(20, i.quantity + line.quantity) } : i));
       }
@@ -47,11 +49,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setQty = useCallback((product_id: string, size: string, qty: number) => {
+  const setQty = useCallback((line: CartLine, qty: number) => {
     setItems((prev) =>
-      qty <= 0
-        ? prev.filter((i) => !(i.product_id === product_id && i.size === size))
-        : prev.map((i) => (i.product_id === product_id && i.size === size ? { ...i, quantity: Math.min(20, qty) } : i)),
+      qty <= 0 ? prev.filter((i) => !same(i, line)) : prev.map((i) => (same(i, line) ? { ...i, quantity: Math.min(20, qty) } : i)),
     );
   }, []);
 

@@ -93,12 +93,18 @@ class CartItemInput(BaseModel):
     product_id: str
     quantity: int = Field(gt=0, le=20)
     size: str = ""
+    color: str = ""
 
 
 class CheckoutInput(BaseModel):
     items: list[CartItemInput] = Field(min_length=1)
+    recipient_name: str = Field(min_length=2, max_length=100)
     phone: str = Field(min_length=6, max_length=20)
     address: str = Field(min_length=5, max_length=500)
+    zone: str
+    courier: str
+    voucher_code: str = ""
+    note: str = Field(default="", max_length=300)
 
 
 class OrderItem(BaseModel):
@@ -107,10 +113,18 @@ class OrderItem(BaseModel):
     price: int
     quantity: int
     size: str = ""
+    color: str = ""
     image_url: str = ""
 
 
 PaymentStatus = Literal["pending", "paid", "failed", "expired"]
+OrderStatus = Literal["awaiting_payment", "paid", "packed", "shipped", "completed", "cancelled"]
+
+
+class TimelineEntry(BaseModel):
+    status: OrderStatus
+    at: datetime
+    note: str = ""
 
 
 class Order(BaseModel):
@@ -118,9 +132,21 @@ class Order(BaseModel):
     order_code: str
     user_id: str
     items: list[OrderItem]
+    subtotal: int
+    shipping_cost: int
+    discount: int
     gross_amount: int
+    voucher_code: str = ""
+    courier: str
+    courier_label: str
+    zone_label: str
+    recipient_name: str
     phone: str
     address: str
+    note: str = ""
+    status: OrderStatus
+    tracking_number: str = ""
+    timeline: list[TimelineEntry]
     payment_status: PaymentStatus
     midtrans_status: str | None = None
     payment_type: str | None = None
@@ -134,7 +160,61 @@ class CheckoutResponse(BaseModel):
     redirect_url: str
 
 
+class AdminStatusUpdate(BaseModel):
+    status: Literal["packed", "shipped", "completed", "cancelled"]
+    tracking_number: str = Field(default="", max_length=60)
+
+
 class MidtransConfig(BaseModel):
     client_key: str
     is_production: bool
     snap_url: str
+
+
+# ---------- Shipping & Vouchers ----------
+class ShippingZone(BaseModel):
+    code: str
+    label: str
+    multiplier: float
+
+
+class CourierOption(BaseModel):
+    code: str
+    name: str
+    service: str
+    base_cost: int
+    etd: str
+
+
+class ShippingOptions(BaseModel):
+    zones: list[ShippingZone]
+    couriers: list[CourierOption]
+
+
+VoucherType = Literal["percent", "fixed", "shipping"]
+
+
+class VoucherInput(BaseModel):
+    code: str = Field(min_length=3, max_length=30)
+    type: VoucherType
+    value: int = Field(gt=0)
+    min_spend: int = Field(default=0, ge=0)
+    max_discount: int = Field(default=0, ge=0)
+    description: str = ""
+    active: bool = True
+
+
+class Voucher(VoucherInput):
+    id: str = Field(default_factory=_uuid)
+
+
+class VoucherValidateInput(BaseModel):
+    code: str
+    subtotal: int = Field(ge=0)
+    shipping_cost: int = Field(ge=0)
+
+
+class VoucherValidateResult(BaseModel):
+    code: str
+    discount: int
+    description: str

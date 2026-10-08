@@ -53,18 +53,18 @@ function CartDrawer() {
             <p className="py-12 text-center text-sm text-muted-foreground" data-testid="cart-empty">{t("cart_empty")}</p>
           )}
           {cart.items.map((i) => (
-            <div key={`${i.product_id}-${i.size}`} className="flex gap-3 border-b border-border pb-4" data-testid="cart-line">
+            <div key={`${i.product_id}-${i.size}-${i.color}`} className="flex gap-3 border-b border-border pb-4" data-testid="cart-line">
               <img src={i.image_url} alt={i.name} className="h-24 w-20 rounded-sm object-cover" />
               <div className="flex flex-1 flex-col">
                 <p className="text-sm font-semibold">{i.name}</p>
-                {i.size && <p className="text-xs text-muted-foreground">{t("size")}: {i.size}</p>}
+                <p className="text-xs text-muted-foreground">{[i.color, i.size].filter(Boolean).join(" · ")}</p>
                 <p className="mt-1 font-mono text-xs">{rupiah(i.price)}</p>
                 <div className="mt-auto flex items-center gap-2">
                   <Button size="icon-xs" variant="outline" aria-label="decrease" data-testid="cart-line-decrease"
-                    onClick={() => cart.setQty(i.product_id, i.size, i.quantity - 1)}><Minus /></Button>
+                    onClick={() => cart.setQty(i, i.quantity - 1)}><Minus /></Button>
                   <span className="w-6 text-center font-mono text-sm" data-testid="cart-line-qty">{i.quantity}</span>
                   <Button size="icon-xs" variant="outline" aria-label="increase" data-testid="cart-line-increase"
-                    onClick={() => cart.setQty(i.product_id, i.size, i.quantity + 1)}><Plus /></Button>
+                    onClick={() => cart.setQty(i, i.quantity + 1)}><Plus /></Button>
                 </div>
               </div>
             </div>

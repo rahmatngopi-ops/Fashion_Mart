@@ -10,6 +10,13 @@ Fashion AI multi-marketplace web app (bilingual ID/EN, default ID).
 - Seller Studio `/seller` (admin only): AI Listing tab (`POST /api/ai/listing` → 4 listings shopee/tokopedia/tiktok/lazada, saved to product.listings when product_id given; copy buttons; client-side CSV export), Catalog CRUD tab, Store Orders tab (`GET /api/admin/orders`).
 - Real marketplace APIs NOT connected (content is copy/CSV export).
 
+## Marketplace-style orders (v2)
+- Product detail: color + size REQUIRED (when product has them), quantity stepper, "Tambah ke Tas" and "Beli Sekarang" (Buy Now → /checkout with router state, bypasses cart, cart untouched).
+- Checkout: recipient, phone, address, shipping zone (5 flat zones × multiplier) + courier (JNE REG/YES, J&T EZ, SiCepat REG/BEST; `GET /api/shipping/options`, cost = round(base*mult/500)*500, server recomputes), voucher (`POST /api/vouchers/validate`), note. Midtrans item_details include SHIPPING and negative VOUCHER line.
+- Order.status: awaiting_payment → paid (auto on Midtrans settlement, stock decremented) → packed (seller) → shipped (seller, tracking_number required) → completed (buyer "Pesanan Diterima" or seller). cancelled: buyer `POST /orders/{id}/cancel` allowed in awaiting_payment (also cancels Midtrans txn) or paid (stock restored); seller via `PATCH /api/admin/orders/{id}/status`. Failed/expired payment → cancelled. Every change pushes a `timeline` entry {status, at, note}.
+- Pages: `/orders` (status filter tabs), `/orders/:id` (stepper, timeline, resi, actions). Seller Studio "Pesanan Toko" tab: status counters + Kemas / Kirim+Resi dialog / Selesai / Batalkan; "Voucher" tab: create/toggle/delete.
+- Seeded vouchers: FASHION10 (10%, min 300k, max 100k), HEMAT50K (Rp50k, min 750k), GRATISONGKIR (shipping up to 25k, min 150k).
+
 ## Auth
 JWT in httpOnly cookie `fm_session` (7 days). `/api/auth/register|login|logout|me`. Roles: customer (register), admin (seeded).
 

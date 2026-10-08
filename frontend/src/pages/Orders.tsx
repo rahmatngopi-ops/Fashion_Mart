@@ -1,46 +1,22 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
-import { toast } from "sonner";
-import { apiGet, apiPost } from "@/lib/api";
-import type { Order, PaymentStatus } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
+import { apiGet } from "@/lib/api";
+import type { Order, OrderStatus } from "@/lib/types";
 import { useI18n, type DictKey } from "@/lib/i18n";
-import { errMsg, rupiah, useMe } from "@/lib/helpers";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { openPayment } from "@/pages/Checkout";
+import { rupiah, useMe } from "@/lib/helpers";
+import { ORDER_STATUSES, OrderStatusBadge } from "@/components/OrderBits";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const STATUS_CLS: Record<PaymentStatus, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  paid: "bg-green-100 text-green-800",
-  failed: "bg-red-100 text-red-800",
-  expired: "bg-neutral-200 text-neutral-700",
-};
-
-export function StatusBadge({ status }: { status: PaymentStatus }) {
-  const { t } = useI18n();
-  return (
-    <Badge className={cn("rounded-full border-0", STATUS_CLS[status])} data-testid="order-status-badge">
-      {t(`status_${status}` as DictKey)}
-    </Badge>
-  );
-}
 
 export default function Orders() {
   const { t } = useI18n();
-  const qc = useQueryClient();
   const { data: me, isLoading: meLoading } = useMe();
-  const { data: orders, isError } = useQuery({
-    queryKey: ["orders"],
-    queryFn: () => apiGet<Order[]>("/orders"),
-    enabled: !!me,
-  });
-  const refresh = useMutation({
-    mutationFn: (id: string) => apiPost<Order>(`/orders/${id}/refresh`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
-    onError: (e) => toast.error(errMsg(e, t("error_generic"))),
-  });
+  const [filter, setFilter] = useState<OrderStatus | "">("");
+  const { data: orders, isError } = useQuery({ queryKey: ["orders"], queryFn: () => apiGet<Order[]>("/orders"), enabled: !!me });
+  const count = (s: OrderStatus) => orders?.filter((o) => o.status === s).length ?? 0;
+  const shown = (orders ?? []).filter((o) => !filter || o.status === filter);
 
   if (!meLoading && !me) {
     return (
@@ -53,49 +29,59 @@ export default function Orders() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 md:px-8">
       <h1 className="font-heading text-4xl md:text-5xl" data-testid="orders-title">{t("orders_title")}</h1>
-      <div className="mt-10 space-y-5">
-        {orders?.length === 0 && <p className="text-muted-foreground" data-testid="orders-empty">{t("orders_empty")}</p>}
+      <div className="mt-8 flex gap-1 overflow-x-auto border-b border-border" data-testid="orders-status-tabs">
+        {(["", ...ORDER_STATUSES] as const).map((s) => (
+          <button
+            key={s || "all"}
+            type="button"
+            onClick={() => setFilter(s)}
+            data-testid={`orders-filter-${s || "all"}`}
+            className={cn(
+              "relative shrink-0 px-4 py-3 text-sm transition-colors duration-200",
+              filter === s ? "text-brand after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-brand" : "text-muted-foreground hover:text-ink",
+            )}
+          >
+            {s ? t(`ord_${s}` as DictKey) : t("all_orders")}
+            {s && count(s) > 0 && <span className="ml-1.5 rounded-full bg-brand-soft px-1.5 font-mono text-[10px] text-brand">{count(s)}</span>}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-6 space-y-4">
+        {orders && shown.length === 0 && <p className="py-12 text-center text-muted-foreground" data-testid="orders-empty">{t("orders_empty")}</p>}
         {isError && <p className="text-muted-foreground">{t("error_generic")}</p>}
-        {!isError && orders?.map((o) => (
-          <div key={o.id} className="rounded-sm border border-border bg-white p-5 animate-fade-up" data-testid={`order-card-${o.order_code}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        {!isError && shown.map((o) => (
+          <Link
+            key={o.id}
+            to={`/orders/${o.id}`}
+            className="block rounded-sm border border-border bg-white p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-ink animate-fade-up"
+            data-testid={`order-card-${o.order_code}`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
               <div>
                 <p className="font-mono text-sm font-semibold" data-testid="order-code">{o.order_code}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(o.created_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
-                  {o.payment_type && ` · ${o.payment_type.replace(/_/g, " ")}`}
+                  {new Date(o.created_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })} · {o.courier_label}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <StatusBadge status={o.payment_status} />
-                {o.payment_status === "pending" && (
-                  <>
-                    <Button size="sm" variant="outline" disabled={refresh.isPending} onClick={() => refresh.mutate(o.id)} data-testid="order-refresh-btn">
-                      <RefreshCw /> {t("refresh_status")}
-                    </Button>
-                    {o.snap_token && (
-                      <Button size="sm" className="bg-brand text-white hover:bg-brand/90" data-testid="order-pay-btn"
-                        onClick={() => openPayment(o.snap_token!, o.id, () => qc.invalidateQueries({ queryKey: ["orders"] })).catch(() => toast.error(t("error_generic")))}>
-                        {t("pay_now")}
-                      </Button>
-                    )}
-                  </>
-                )}
+              <OrderStatusBadge status={o.status} />
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <img src={o.items[0]?.image_url} alt="" className="h-16 w-12 rounded-sm object-cover" />
+              <div className="flex-1 text-sm">
+                <p className="font-medium">{o.items[0]?.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {[o.items[0]?.color, o.items[0]?.size].filter(Boolean).join(" · ")} · x{o.items[0]?.quantity}
+                  {o.items.length > 1 && ` · +${o.items.length - 1}`}
+                </p>
               </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">{t("total")}</p>
+                <p className="font-mono text-sm font-semibold" data-testid="order-total">{rupiah(o.gross_amount)}</p>
+              </div>
+              <ChevronRight className="size-4 text-muted-foreground" />
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {o.items.map((i) => (
-                <div key={`${i.product_id}-${i.size}`} className="flex items-center gap-2 rounded-sm bg-muted p-2 pr-3">
-                  <img src={i.image_url} alt={i.name} className="h-12 w-9 rounded-sm object-cover" />
-                  <div className="text-xs">
-                    <p className="font-medium">{i.name}</p>
-                    <p className="text-muted-foreground">{i.size && `${i.size} · `}x{i.quantity}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-right font-mono text-sm font-semibold" data-testid="order-total">{rupiah(o.gross_amount)}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

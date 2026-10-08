@@ -4,7 +4,7 @@ import os
 
 from lib.auth import hash_password, verify_password
 from lib.db import db
-from models.schemas import Product
+from models.schemas import Product, Voucher
 
 U = "?auto=format&fit=crop&w=900&q=80"
 SEED_PRODUCTS = [
@@ -49,3 +49,15 @@ async def seed() -> None:
             for n, c, p, img, d, col, sz in SEED_PRODUCTS
         ]
         await db.products.insert_many(docs)
+
+    seed_vouchers = [
+        Voucher(code="FASHION10", type="percent", value=10, min_spend=300000, max_discount=100000,
+                description="Diskon 10% min. belanja Rp300.000 (maks Rp100.000)"),
+        Voucher(code="HEMAT50K", type="fixed", value=50000, min_spend=750000,
+                description="Potongan Rp50.000 min. belanja Rp750.000"),
+        Voucher(code="GRATISONGKIR", type="shipping", value=25000, min_spend=150000,
+                description="Gratis ongkir s.d. Rp25.000 min. belanja Rp150.000"),
+    ]
+    for v in seed_vouchers:
+        if not await db.vouchers.find_one({"code": v.code}):
+            await db.vouchers.insert_one(v.model_dump())
