@@ -10,6 +10,8 @@ import OrderDetail from "@/pages/OrderDetail";
 import Checkout from "@/pages/Checkout";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import Creator from "@/pages/Creator";
+import SupportPage from "@/pages/SupportPage";
 
 export default function App() {
   return (
@@ -25,6 +27,8 @@ export default function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/creator" element={<Creator />} />
+        <Route path="/s/:handle" element={<SupportPage />} />
         <Route path="*" element={<Home />} />
       </Route>
     </Routes>

@@ -174,3 +174,50 @@ export interface MidtransConfig {
   is_production: boolean;
   snap_url: string;
 }
+
+// ---------- Saweria (mirrors backend/routers/saweria.py) ----------
+export type SupportStatus = "pending" | "paid" | "failed" | "expired";
+
+export interface CreatorProfileInput {
+  handle: string;
+  display_name: string;
+  bio: string;
+  avatar_url: string;
+}
+
+export interface CreatorProfile extends CreatorProfileInput {
+  id: string;
+  user_id: string;
+}
+
+export interface SupportInput {
+  amount: number;
+  supporter_name: string;
+  supporter_email: string;
+  message: string;
+}
+
+export interface SupportPublic {
+  id: string;
+  supporter_name: string;
+  amount: number;
+  message: string;
+  status: SupportStatus;
+  created_at: string;
+}
+
+export interface Support extends SupportPublic {
+  code: string;
+  creator_id: string;
+  payment_type: string | null;
+}
+
+export interface CreatorPage {
+  profile: CreatorProfile;
+  recent: SupportPublic[];
+}
+
+export interface SupportCheckoutResponse {
+  support: SupportPublic;
+  token: string;
+}

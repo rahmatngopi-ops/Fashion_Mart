@@ -108,6 +108,7 @@ export default function Layout() {
             <NavLink to="/products" className={navCls} data-testid="nav-shop-link">{t("nav_shop")}</NavLink>
             <NavLink to="/stylist" className={navCls} data-testid="nav-stylist-link">{t("nav_stylist")}</NavLink>
             {me && <NavLink to="/orders" className={navCls} data-testid="nav-orders-link">{t("nav_orders")}</NavLink>}
+            {me && <NavLink to="/creator" className={navCls} data-testid="nav-saweria-link">{t("nav_saweria")}</NavLink>}
             {me?.role === "admin" && (
               <NavLink to="/seller" className={navCls} data-testid="nav-seller-studio-link">{t("nav_seller")}</NavLink>
             )}

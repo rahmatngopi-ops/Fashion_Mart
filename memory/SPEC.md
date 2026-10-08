@@ -25,3 +25,8 @@ users{id,name,email,role,password_hash}, products{id,name,category,price,stock,i
 
 ## Seed (startup, idempotent)
 Admin admin@fashionmart.id / Admin123!; 10 products (e.g. "Blazer Linen Oversized" Rp689.000, "Kaos Essential Organik" Rp179.000).
+
+## Saweria (creator support) — routers/saweria.py
+- Any logged-in user creates a creator profile at `/creator` (`PUT /api/creators/me`: handle [a-z0-9_] unique, display_name, bio, avatar_url) and sees support history + total paid (`GET /api/creators/me/supports`).
+- Public page `/s/:handle` (`GET /api/creators/{handle}` → profile + 20 recent PAID supports). Guests allowed. Presets 10k/25k/50k/100k/250k or custom (min Rp5.000), name, optional email, message (≤255).
+- `POST /api/creators/{handle}/support` → Midtrans Snap token (code prefix `SWR-`). `POST /api/supports/{id}/refresh` reconciles via Status API. Webhook `/api/webhooks/midtrans` routes `SWR-*` to supports. Collections: creators, supports{status pending|paid|failed|expired}.

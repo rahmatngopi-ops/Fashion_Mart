@@ -271,6 +271,12 @@ async def midtrans_webhook(request: Request):
     expected = hashlib.sha512(f"{order_code}{status_code}{gross}{_server_key()}".encode()).hexdigest()
     if not hmac.compare_digest(expected, data["signature_key"]):
         raise HTTPException(status_code=403, detail="Invalid signature")
+    if order_code.startswith("SWR-"):  # Saweria support payment
+        from routers.saweria import reconcile_support
+        support = await db.supports.find_one({"code": order_code}, {"_id": 0})
+        if support:
+            await reconcile_support(support)
+        return {"ok": True}
     doc = await db.orders.find_one({"order_code": order_code}, {"_id": 0})
     if doc and doc["status"] == "awaiting_payment":
         await _reconcile(doc)

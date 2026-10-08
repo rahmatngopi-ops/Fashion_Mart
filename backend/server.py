@@ -13,7 +13,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 from lib.db import client, ensure_indexes  # noqa: E402
 from lib.seed import seed  # noqa: E402
-from routers import ai, auth, commerce, orders, products  # noqa: E402
+from routers import ai, auth, commerce, orders, products, saweria  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -43,6 +43,7 @@ api_router.include_router(auth.router)
 api_router.include_router(products.router)
 api_router.include_router(orders.router)
 api_router.include_router(commerce.router)
+api_router.include_router(saweria.router)
 api_router.include_router(ai.router)
 
 app.add_middleware(
