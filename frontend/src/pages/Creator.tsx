@@ -23,11 +23,13 @@ function ProfileForm({ initial }: { initial: CreatorProfile | null }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<CreatorProfileInput>({
     handle: initial?.handle ?? "", display_name: initial?.display_name ?? "", bio: initial?.bio ?? "", avatar_url: initial?.avatar_url ?? "",
+    goal_title: initial?.goal_title ?? "", goal_amount: initial?.goal_amount ?? 0,
   });
   const save = useMutation({
     mutationFn: () => apiPut<CreatorProfile>("/creators/me", form),
     onSuccess: (p) => {
       qc.setQueryData(["creator-me"], p);
+      qc.invalidateQueries({ queryKey: ["creator"] });
       toast.success(t("save"));
     },
     onError: (e) => toast.error(errMsg(e, t("error_generic"))),
@@ -56,6 +58,17 @@ function ProfileForm({ initial }: { initial: CreatorProfile | null }) {
       <div className="space-y-2">
         <Label>{t("sw_avatar")}</Label>
         <Input value={form.avatar_url} onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} className="h-11" data-testid="creator-avatar-input" />
+      </div>
+      <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>{t("sw_goal_title")}</Label>
+          <Input maxLength={80} value={form.goal_title} onChange={(e) => setForm({ ...form, goal_title: e.target.value })} className="h-11" data-testid="creator-goal-title-input" />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("sw_goal_amount")}</Label>
+          <Input type="number" min={0} value={form.goal_amount} onChange={(e) => setForm({ ...form, goal_amount: Number(e.target.value) })} className="h-11 font-mono" data-testid="creator-goal-amount-input" />
+        </div>
+        <p className="text-xs text-muted-foreground sm:col-span-2">{t("sw_goal_hint")}</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={save.isPending} data-testid="creator-save-btn">{t("save")}</Button>

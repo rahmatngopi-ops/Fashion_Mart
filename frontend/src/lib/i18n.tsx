@@ -168,6 +168,12 @@ const DICT = {
   sw_total: { id: "Total diterima", en: "Total received" },
   sw_open_page: { id: "Buka halaman", en: "Open page" },
   sw_not_found: { id: "Kreator tidak ditemukan.", en: "Creator not found." },
+  sw_goal_title: { id: "Judul target (opsional)", en: "Goal title (optional)" },
+  sw_goal_amount: { id: "Target dana (Rp, 0 = tanpa target)", en: "Funding goal (IDR, 0 = no goal)" },
+  sw_goal_hint: { id: "Mengubah target akan memulai ulang progres dari Rp0.", en: "Changing the goal restarts progress from IDR 0." },
+  sw_goal: { id: "Target Dukungan", en: "Support Goal" },
+  sw_goal_of: { id: "terkumpul dari", en: "raised of" },
+  sw_goal_reached: { id: "Target tercapai! 🎉", en: "Goal reached! 🎉" },
 } as const;
 
 export type DictKey = keyof typeof DICT;

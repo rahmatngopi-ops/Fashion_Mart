@@ -15,6 +15,27 @@ import { cn } from "@/lib/utils";
 
 const PRESETS = [10000, 25000, 50000, 100000, 250000];
 
+function GoalBar({ title, goal, raised }: { title: string; goal: number; raised: number }) {
+  const { t } = useI18n();
+  const pct = Math.min(100, Math.round((raised / goal) * 100));
+  return (
+    <div className="mt-6 rounded-sm border border-border bg-white p-5 animate-fade-up" data-testid="support-goal-card">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-xs font-medium uppercase tracking-wider text-brand">{t("sw_goal")}</p>
+        <p className="font-mono text-sm font-semibold" data-testid="support-goal-percent">{pct}%</p>
+      </div>
+      {title && <p className="mt-1 font-heading text-xl" data-testid="support-goal-title">{title}</p>}
+      <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} data-testid="support-goal-progress">
+        <div className="h-full rounded-full bg-brand transition-[width] duration-700 ease-out" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground" data-testid="support-goal-amounts">
+        <span className="font-mono font-semibold text-ink">{rupiah(raised)}</span> {t("sw_goal_of")} <span className="font-mono">{rupiah(goal)}</span>
+      </p>
+      {raised >= goal && <p className="mt-1 text-sm font-medium text-brand" data-testid="support-goal-reached">{t("sw_goal_reached")}</p>}
+    </div>
+  );
+}
+
 export default function SupportPage() {
   const { handle = "" } = useParams();
   const { t } = useI18n();
@@ -75,6 +96,7 @@ export default function SupportPage() {
             {p.bio && <p className="mt-4 text-sm leading-relaxed text-muted-foreground" data-testid="support-creator-bio">{p.bio}</p>}
           </div>
         )}
+        {p && data && p.goal_amount > 0 && <GoalBar title={p.goal_title} goal={p.goal_amount} raised={data.goal_raised} />}
         <h2 className="mt-8 font-heading text-2xl">{t("sw_recent")}</h2>
         <div className="mt-4 space-y-3" data-testid="support-recent-list">
           {data?.recent.length === 0 && <p className="text-sm text-muted-foreground">{t("sw_none")}</p>}

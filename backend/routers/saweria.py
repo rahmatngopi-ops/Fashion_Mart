@@ -25,6 +25,8 @@ class CreatorProfileInput(BaseModel):
     display_name: str = Field(min_length=1, max_length=60)
     bio: str = Field(default="", max_length=300)
     avatar_url: str = Field(default="", max_length=500)
+    goal_title: str = Field(default="", max_length=80)
+    goal_amount: int = Field(default=0, ge=0, le=1_000_000_000)  # 0 = no goal
 
     @field_validator("handle")
     @classmethod
@@ -68,6 +70,7 @@ class Support(SupportPublic):
 class CreatorPage(BaseModel):
     profile: CreatorProfile
     recent: list[SupportPublic]
+    goal_raised: int = 0
 
 
 class SupportCheckoutResponse(BaseModel):
@@ -95,6 +98,8 @@ async def upsert_profile(body: CreatorProfileInput, user: dict = Depends(get_cur
         raise HTTPException(status_code=409, detail="Handle sudah dipakai")
     existing = await db.creators.find_one({"user_id": user["id"]}, {"_id": 0})
     doc = {**(existing or {"id": str(uuid.uuid4()), "user_id": user["id"]}), **body.model_dump()}
+    if not existing or (existing.get("goal_title"), existing.get("goal_amount")) != (body.goal_title, body.goal_amount):
+        doc["goal_started_at"] = datetime.now(timezone.utc)  # new/changed goal: progress restarts
     await db.creators.update_one({"user_id": user["id"]}, {"$set": doc}, upsert=True)
     return CreatorProfile(**doc)
 
@@ -114,7 +119,14 @@ async def creator_page(handle: str):
     if not doc:
         raise HTTPException(status_code=404, detail="Creator not found")
     recent = await db.supports.find({"creator_id": doc["id"], "status": "paid"}, {"_id": 0}).sort("created_at", -1).to_list(20)
-    return CreatorPage(profile=CreatorProfile(**doc), recent=[_support(d, SupportPublic) for d in recent])
+    raised = 0
+    if doc.get("goal_amount"):
+        match = {"creator_id": doc["id"], "status": "paid"}
+        if doc.get("goal_started_at"):
+            match["created_at"] = {"$gte": doc["goal_started_at"]}
+        agg = await db.supports.aggregate([{"$match": match}, {"$group": {"_id": None, "sum": {"$sum": "$amount"}}}]).to_list(1)
+        raised = agg[0]["sum"] if agg else 0
+    return CreatorPage(profile=CreatorProfile(**doc), recent=[_support(d, SupportPublic) for d in recent], goal_raised=raised)
 
 
 # ---------- Payment ----------

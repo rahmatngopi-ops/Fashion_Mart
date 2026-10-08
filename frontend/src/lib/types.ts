@@ -183,6 +183,8 @@ export interface CreatorProfileInput {
   display_name: string;
   bio: string;
   avatar_url: string;
+  goal_title: string;
+  goal_amount: number; // 0 = no goal
 }
 
 export interface CreatorProfile extends CreatorProfileInput {
@@ -215,6 +217,7 @@ export interface Support extends SupportPublic {
 export interface CreatorPage {
   profile: CreatorProfile;
   recent: SupportPublic[];
+  goal_raised: number;
 }
 
 export interface SupportCheckoutResponse {
